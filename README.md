@@ -68,7 +68,7 @@ On successful startup, the server prints exactly this line to the console (`Sour
 Server running at http://127.0.0.1:3000/
 ```
 
-> **Note:** Start the server with `node server.js`, **not** `npm start` — there is no `start` script defined (`Source: package.json:6-8`).
+> **Note:** Start the server with `node server.js`. No explicit `start` script is defined in `package.json`, so `node server.js` is the documented startup command (`Source: package.json:6-8`).
 
 ### Quick verification
 
@@ -101,6 +101,8 @@ The server exposes a single **catch-all endpoint**: it does not inspect the requ
 
 `Source: server.js:36-40`
 
+> **`HEAD` requests (HTTP semantics):** A `HEAD` response carries the same `200 OK` status line and `Content-Type: text/plain` header as `GET`, but **no message body**. The request handler runs identically for every method (`Source: server.js:36-40`); Node's HTTP layer omits the body — and its `Content-Length` — for `HEAD`, because an HTTP `HEAD` response must not contain a body (verified against the running server). The `Content-Length: 14` and body rows above therefore apply to body-returning methods such as `GET` and `POST`.
+
 ### Example request / response
 
 ```bash
@@ -112,7 +114,7 @@ Content-Length: 14
 Hello, World!
 ```
 
-Because the request handler does not inspect the request, the **same** response is returned for any method and path — for example, `POST http://127.0.0.1:3000/any/random/path` yields an identical `200 OK` / `text/plain` / `Hello, World!\n` response (`Source: server.js:36-40`):
+Because the request handler does not inspect the request, the **same** response is returned for any method and path (with the standard `HEAD` exception noted above) — for example, `POST http://127.0.0.1:3000/any/random/path` yields an identical `200 OK` / `text/plain` / `Hello, World!\n` response (`Source: server.js:36-40`):
 
 ```bash
 $ curl -i -X POST http://127.0.0.1:3000/any/random/path
@@ -121,6 +123,14 @@ Content-Type: text/plain
 Content-Length: 14
 
 Hello, World!
+```
+
+A `HEAD` request returns the same status line and headers but **no body** (and no `Content-Length`), per HTTP semantics (`Source: server.js:36-40`; verified against the running server):
+
+```bash
+$ curl -I http://127.0.0.1:3000/any/path
+HTTP/1.1 200 OK
+Content-Type: text/plain
 ```
 
 > Node's HTTP server also emits standard `Date`, `Connection`, and `Keep-Alive` headers alongside those shown above; the contract fields relevant to this endpoint are `Content-Type`, `Content-Length`, and the body (`Source: Node.js HTTP module documentation — https://nodejs.org/api/http.html`; the server uses this built-in module at `Source: server.js:9`).
@@ -138,7 +148,7 @@ sequenceDiagram
 
 ## Code Explanation
 
-The entire server is defined in `server.js`. The walkthrough below follows the file by line range. The source file also contains JSDoc comment blocks that document these same elements inline (`Source: server.js:1-7, 11-14, 18-20, 24-35, 42-50`).
+The entire server is defined in `server.js`. The walkthrough below follows the file by line range. The source file also contains JSDoc comment blocks that document these same elements inline (`Source: server.js:1-7, 11-15, 18-21, 24-35, 42-50`).
 
 - **Import the HTTP module** — the file requires Node's built-in `http` module; there are no third-party imports (`Source: server.js:9`).
 
@@ -239,6 +249,6 @@ The following are documented as **facts** about the current repository state; th
 
 - **Package name vs. project title** — `package.json` declares the package name as `hello_world`, while the project/title is `hao-backprop-test` (`Source: package.json:2`, `Source: original README stub, commit 760423c:L1`).
 - **`main` points to a non-existent file** — `package.json` declares `main` as `index.js`, but there is no `index.js` in the repository; the runnable entry point in practice is `server.js` (`Source: package.json:5`).
-- **No `start` script** — there is no `npm start` script, so start the server with `node server.js` (`Source: package.json:6-8`).
+- **No explicit `start` script** — `package.json` defines no `start` script, so the documented startup command is `node server.js` (`Source: package.json:6-8`). Because a `server.js` file exists, npm's built-in default would run `node server.js` if `npm start` were invoked; no `start` script is declared regardless.
 - **`npm test` fails by design** — the only script defined is `test`, which runs `echo "Error: no test specified" && exit 1` and therefore exits non-zero; there are no tests (`Source: package.json:7`).
 - **Hardcoded host and port** — `hostname` (`127.0.0.1`) and `port` (`3000`) are hardcoded constants; changing either requires editing `server.js` (`Source: server.js:16, 22`).

@@ -23,8 +23,8 @@ const port = 3000;
 
 /**
  * Handles every incoming HTTP request with a fixed plain-text greeting. The
- * request is not inspected; all methods and paths receive `200 OK`,
- * `Content-Type: text/plain`, and the body `Hello, World!\n`.
+ * request is not inspected; all methods and paths receive `200 OK` and
+ * `Content-Type: text/plain` with body `Hello, World!\n` (HEAD omits the body).
  *
  * @param {http.IncomingMessage} req - Incoming HTTP request (not inspected).
  * @param {http.ServerResponse} res - HTTP response used to send the greeting.
