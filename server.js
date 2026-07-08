@@ -5,8 +5,12 @@ const port = 3000;
 
 const app = express();
 
-app.get('/good-evening', (req, res) => {
-  res.type('text/plain').send('Good evening');
+app.use((req, res, next) => {
+  if (req.method === 'GET' && req.path === '/good-evening') {
+    res.type('text/plain').send('Good evening');
+    return;
+  }
+  next();
 });
 
 app.use((req, res) => {
